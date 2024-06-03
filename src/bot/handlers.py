@@ -11,7 +11,7 @@ from bot.settings import text as txt  #menu_text, choice_text
 from bot.kb import get_menu, choice_sport, register_user
 from bot.states import RunState, DataState, WalkingState, SwimmingState
 # from bot.models import User, Base, Running, Walking, Swimming, association_table_running, association_table_walking, association_table_swimming
-from bot.models import User, Base, Running, Swimming
+from bot.models import User, Base, Running, Swimming, Walking
 from bot import calculations as calc
 
 
@@ -166,7 +166,7 @@ async def actions_handler_running(message: Message, state: FSMContext):
 
 
 @router.message(RunState.duration)
-async def actions_handler_duration(message: Message, state: FSMContext):
+async def running_handler_duration(message: Message, state: FSMContext):
     running_duration = message.text
     user_id = message.from_user.id
     if running_duration.isdigit():
@@ -194,19 +194,50 @@ async def actions_handler_duration(message: Message, state: FSMContext):
     else:
         await message.answer(text=txt.incorrect_duration)
         await state.set_state(RunState.duration)
-    # elif sport_type == "walking":
-    #     walking_duration = message.text
-    #     if walking_duration.isdigit():
-    #         await state.update_data(duration=walking_duration)
-    #         await message.answer(text=txt.height_walking)
-    #         await state.set_state(WalkingState.height)
-    # elif sport_type == "swimming":
-    #     swimming_duration = message.text
-    #     print(swimming_duration)
-    #     if swimming_duration.isdigit():
-    #         await state.update_data(duration=swimming_duration)
-    #         await message.answer(text=txt.length_pool)
-    #         await state.set_state(SwimmingState.length_pool)
+
+
+@router.message(WalkingState.actions)
+async def actions_handler_wlaking(message: Message, state: FSMContext):
+    steps_walking = message.text
+    if steps_walking.isdigit():
+        await state.update_data(action=steps_walking)
+        await message.answer(text=txt.duration_running)
+        await state.set_state(WalkingState.duration)
+    else:
+        await message.answer(text=txt.incorrect_actions)
+        await state.set_state(WalkingState.actions)
+
+
+@router.message(WalkingState.duration)
+async def walking_handler_duration(message: Message, state: FSMContext):
+    walking_duration = message.text
+    user_id = message.from_user.id
+    if walking_duration.isdigit():
+        user_data = await state.get_data()
+        user_action = user_data['action']
+        with Session() as session:
+            user_1 = session.query(User).filter_by(tg_id=user_id).first()
+            user_weight = user_1.weight
+            user_height = user_1.height
+        list_data = [float(user_action), float(walking_duration), float(user_weight), float(user_height)]
+        walk_1 = calc.read_package(workout_type='WLK', data=list_data)
+        info = walk_1.show_training_info()
+        msg = info.get_message()
+        walk_distance = info.distance
+        walk_speed = info.speed
+        spent_calories = info.calories
+        with Session() as session:
+            user_1 = session.query(User).filter_by(tg_id=user_id).first()
+            new_training = Walking(action=user_action, duration=walking_duration, user=user_1,
+                                   distance=walk_distance, speed=walk_speed, spent_calories=spent_calories)
+            session.add(new_training)
+            session.commit()
+
+        await message.answer(text=msg, parse_mode='HTML')
+        await message.answer(text=txt.menu_text, reply_markup=get_menu())
+    else:
+        await message.answer(text=txt.incorrect_duration)
+        await state.set_state(WalkingState.duration)
 
 
 # @router.message(WalkingState.height)
@@ -243,6 +274,32 @@ async def actions_handler_duration(message: Message, state: FSMContext):
 #         await state.set_state(WalkingState.height)
 
 
+@router.message(SwimmingState.actions)
+async def actions_handler_swimming(message: Message, state: FSMContext):
+    steps_swimming = message.text
+    if steps_swimming.isdigit():
+        await state.update_data(action=steps_swimming)
+        await message.answer(text=txt.duration_running)
+        await state.set_state(SwimmingState.duration)
+    else:
+        await message.answer(text=txt.incorrect_actions)
+        await state.set_state(SwimmingState.actions)
+
+
+@router.message(SwimmingState.duration)
+async def swimming_handler_duration(message: Message, state: FSMContext):
+    swimming_duration = message.text
+    user_id = message.from_user.id
+    if swimming_duration.isdigit():
+        await state.update_data(duration=swimming_duration)
+        await message.answer(text=txt.length_pool)
+        await state.set_state(SwimmingState.length_pool)
+    else:
+        await message.answer(text=txt.incorrect_duration)
+        await state.set_state(SwimmingState.duration)
+
+
+
 @router.message(SwimmingState.length_pool)
 async def insert_length_pool(message: Message, state: FSMContext):
     length_pool = message.text
@@ -265,7 +322,6 @@ async def insert_count_pool(message: Message, state: FSMContext):
         user_action = user_data['action']
         user_duration = user_data['duration']
         pool_length = user_data['length_pool']
-        training_date = datetime.now()
         with Session() as session:
             user_1 = session.query(User).filter_by(tg_id=user_id).first()
             user_weight = user_1.weight
@@ -279,10 +335,11 @@ async def insert_count_pool(message: Message, state: FSMContext):
         spent_calories = info.calories
         with Session() as session:
             user_1 = session.query(User).filter_by(tg_id=user_id).first()
-            new_swimming = Swimming(action=user_action, duration=user_duration, length_pool=pool_length,
-                                    count_pool=count_pool, date=training_date, distance=swim_distance,
-                                    calories=spent_calories, speed=swim_speed)
-            new_swimming.user.append(user_1)
+            new_swimming = Swimming(action=user_action, duration=user_duration, user=user_1,
+                                    length_pool=pool_length, count_pool=count_pool,
+                                    distance=swim_distance,
+                                    spent_calories=spent_calories, speed=swim_speed)
+            # new_swimming.user.append(user_1)
             session.add(new_swimming)
             session.commit()
         await message.answer(text=msg, parse_mode='HTML')

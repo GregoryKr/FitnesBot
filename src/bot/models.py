@@ -132,7 +132,7 @@ class Swimming(Workout):
     id = Column(Integer, ForeignKey('workout.id'), primary_key=True)
     action = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=False)
-    len_pool = Column(Float, nullable=False)
+    length_pool = Column(Float, nullable=False)
     count_pool = Column(Integer, nullable=False)
     speed = Column(Float, nullable=False)
     spent_calories = Column(Float, nullable=False)
