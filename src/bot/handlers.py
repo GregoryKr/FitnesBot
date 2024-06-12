@@ -11,7 +11,7 @@ from bot.settings import text as txt  #menu_text, choice_text
 from bot.kb import get_menu, choice_sport, register_user
 from bot.states import RunState, DataState, WalkingState, SwimmingState
 # from bot.models import User, Base, Running, Walking, Swimming, association_table_running, association_table_walking, association_table_swimming
-from bot.models import User, Base, Running, Swimming, Walking
+from bot.models import User, Base, Running, Swimming, Walking, Workout
 from bot import calculations as calc
 
 
@@ -113,32 +113,39 @@ async def sport_handler(call: types.CallbackQuery):
     print(user_id)
     with Session() as session:
         user_1 = session.query(User).filter_by(tg_id=user_id).first()
-        id_1 = user_1.user_id
-        trainings_runnig = session.query(association_table_running).filter_by(user_id=id_1).all() # получаем котеж , который включает id тренировок
-        trainings_walking = session.query(association_table_walking).filter_by(user_id=id_1).all()
-        trainings_swimming = session.query(association_table_swimming).filter_by(user_id=id_1).all()
-        print(trainings_runnig, trainings_walking, trainings_swimming)
-        for info_run in trainings_runnig: # получаем id тренировки из кортежа
-            print(info_run)
-            run_id = info_run[2]
-            print(run_id)
-            training_run = session.query(Running).filter_by(id=run_id).first() # получаем экземпляр класса Running
-            print(training_run)
-            # await call.message.answer(text=training_run)
-        for info_walk in trainings_walking: # получаем id тренировки из кортежа
-            print(info_walk)
-            walk_id = info_walk[2]
-            print(walk_id)
-            training_walk = session.query(Walking).filter_by(id=run_id).first() # получаем экземпляр класса Walking
-            print(training_walk)
-        for info_swim in trainings_swimming: # получаем id тренировки из кортежа
-            print(info_swim)
-            swim_id = info_swim[2]
-            print(swim_id)
-            training_swim = session.query(Swimming).filter_by(id=run_id).first() # получаем экземпляр класса Swimming
-            print(training_swim)
+        id_1 = user_1.id
+        print(id_1)
+        history_1 = session.query(Workout).filter_by(user_id=id_1).all()
+        print(history_1)
+        for training in history_1:
+            info_about_training = training.history_message()
+            await call.message.answer(text=info_about_training)
+        await call.message.answer(text=txt.menu_text, reply_markup=get_menu())
+        # trainings_runnig = session.query(association_table_running).filter_by(user_id=id_1).all() # получаем котеж , который включает id тренировок
+        # trainings_walking = session.query(association_table_walking).filter_by(user_id=id_1).all()
+        # trainings_swimming = session.query(association_table_swimming).filter_by(user_id=id_1).all()
+        # print(trainings_runnig, trainings_walking, trainings_swimming)
+        # for info_run in trainings_runnig: # получаем id тренировки из кортежа
+        #     print(info_run)
+        #     run_id = info_run[2]
+        #     print(run_id)
+        #     training_run = session.query(Running).filter_by(id=run_id).first() # получаем экземпляр класса Running
+        #     print(training_run)
+        #     # await call.message.answer(text=training_run)
+        # for info_walk in trainings_walking: # получаем id тренировки из кортежа
+        #     print(info_walk)
+        #     walk_id = info_walk[2]
+        #     print(walk_id)
+        #     training_walk = session.query(Walking).filter_by(id=run_id).first() # получаем экземпляр класса Walking
+        #     print(training_walk)
+        # for info_swim in trainings_swimming: # получаем id тренировки из кортежа
+        #     print(info_swim)
+        #     swim_id = info_swim[2]
+        #     print(swim_id)
+        #     training_swim = session.query(Swimming).filter_by(id=run_id).first() # получаем экземпляр класса Swimming
+        #     print(training_swim)
 
-    await call.message.edit_text(text=txt.choice_text, reply_markup=choice_sport())
+    # await call.message.edit_text(text=txt.choice_text, reply_markup=choice_sport())
 
 
 @router.callback_query(F.data.startswith("sport"))

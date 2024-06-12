@@ -125,6 +125,16 @@ class Running(Workout):
         'inherit_condition': id == Workout.id
     }
 
+    def history_message(self) -> str:
+        """
+        Функция выводит информацию об истории тренировок
+        :return: сообщение с данными о тренировке
+        """
+        return (f"Дата тренировки: {self.date}, \n"
+                f"Тип тренировки: {self.type}, \n"
+                f"дистанция: {self.distance} км, \n"
+                f"потраченные калории: {self.spent_calories}, \n")
+
 
 class Swimming(Workout):
     __tablename__ = 'swimming'
@@ -144,6 +154,15 @@ class Swimming(Workout):
         'polymorphic_identity': 'swimming',
         'inherit_condition': id == Workout.id
     }
+    def history_message(self) -> str:
+        """
+        Функция выводит информацию об истории тренировок
+        :return: сообщение с данными о тренировке
+        """
+        return (f"Дата тренировки: {self.date}, \n"
+                f"Тип тренировки: {self.type}, \n"
+                f"дистанция: {self.distance} км, \n"
+                f"потраченные калории: {self.spent_calories}, \n")
 
 class Walking(Workout):
     __tablename__ = 'walking'
@@ -161,6 +180,15 @@ class Walking(Workout):
         'polymorphic_identity': 'walking',
         'inherit_condition': id == Workout.id
     }
+    def history_message(self) -> str:
+        """
+        Функция выводит информацию об истории тренировок
+        :return: сообщение с данными о тренировке
+        """
+        return (f"Дата тренировки: {self.date}, \n"
+                f"Тип тренировки: {self.type}, \n"
+                f"дистанция: {self.distance} км, \n"
+                f"потраченные калории: {self.spent_calories}, \n")
 class User(Base):
     __tablename__ = 'users'
 
@@ -181,3 +209,5 @@ Workout.walking = relationship('Walking', back_populates='workout', uselist=Fals
 
 #дополнить таблицы Юзер (рост), дополнить все остальные таблицы(workout - вносим скорость, потраченные калории),
 # добавить таблицу ходьбы,
+
+
