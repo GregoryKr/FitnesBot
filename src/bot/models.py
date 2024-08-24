@@ -1,85 +1,3 @@
-import sqlalchemy
-# from sqlalchemy import Column, Integer, Float, String, DateTime, Table, ForeignKey
-# from sqlalchemy.orm import declarative_base, relationship
-#
-#
-#
-# Base = declarative_base()
-#
-#
-# association_table_running = Table('running_assoc_table', Base.metadata,
-#                           Column('id', Integer, primary_key=True),
-#                           Column('user_id', Integer, ForeignKey('user.user_id')),
-#                           Column('run_training_id', Integer, ForeignKey('running.id'))
-#                           )
-#
-#
-# association_table_walking = Table('walking_assoc_table', Base.metadata,
-#                                   Column('id', Integer, primary_key=True),
-#                                   Column('user_id', Integer, ForeignKey('user.user_id')),
-#                                   Column('walk_training_id', Integer, ForeignKey('walking.id'))
-#                                   )
-#
-#
-# association_table_swimming = Table('swim_assoc_table', Base.metadata,
-#                                    Column('id', Integer, primary_key=True),
-#                                    Column('user_id', Integer, ForeignKey('user.user_id')),
-#                                    Column('swim_training_id', Integer, ForeignKey('swimming.id'))
-#                                    )
-# class User(Base):
-#     __tablename__ = 'user'
-#
-#     user_id = Column(
-#         Integer,
-#         primary_key=True
-#     )
-#     username = Column(String(52), comment='tg Username')
-#     age = Column(Float)
-#     weight = Column(Float)
-#     height = Column(Float)
-#     tg_id = Column(Integer)
-#     run = relationship('Running', secondary=association_table_running, back_populates='user')
-#     walk = relationship('Walking', secondary=association_table_walking, back_populates='user')
-#     swim = relationship('Swimming', secondary=association_table_swimming, back_populates='user')
-#
-#
-# class Running(Base):
-#     __tablename__ = 'running'
-#     id = Column(Integer, primary_key=True)
-#     action = Column(Integer)
-#     duration = Column(Float)
-#     date = Column(DateTime)
-#     distance = Column(Float)
-#     calories = Column(Float)
-#     speed = Column(Float)
-#     user = relationship('User', secondary=association_table_running, back_populates='run')
-#
-# class Walking(Base):
-#     __tablename__ = 'walking'
-#     id = Column(Integer, primary_key=True)
-#     action = Column(Integer)
-#     duration = Column(Float)
-#     height = Column(Float)
-#     date = Column(DateTime)
-#     distance = Column(Float)
-#     calories = Column(Float)
-#     speed = Column(Float)
-#     user = relationship('User', secondary=association_table_walking, back_populates='walk')
-#
-#
-# class Swimming(Base):
-#     __tablename__ = 'swimming'
-#     id = Column(Integer, primary_key=True)
-#     action = Column(Integer)
-#     duration = Column(Float)
-#     length_pool = Column(Float)
-#     count_pool = Column(Integer)
-#     date = Column(DateTime)
-#     distance = Column(Float)
-#     calories = Column(Float)
-#     speed = Column(Float)
-#     user = relationship('User', secondary=association_table_swimming, back_populates='swim')
-
 import pytz
 from datetime import datetime
 
@@ -91,6 +9,7 @@ from sqlalchemy.orm import relationship, declarative_base
 moscow_time = pytz.timezone('Europe/Moscow')
 
 Base = declarative_base()
+
 
 class Workout(Base):
     __tablename__ = 'workout'
@@ -125,15 +44,17 @@ class Running(Workout):
         'inherit_condition': id == Workout.id
     }
 
+
     def history_message(self) -> str:
         """
         Функция выводит информацию об истории тренировок
         :return: сообщение с данными о тренировке
         """
+        type = 'Бег'
         return (f"Дата тренировки: {self.date}, \n"
-                f"Тип тренировки: {self.type}, \n"
+                f"Тип тренировки: {type}, \n"
                 f"дистанция: {self.distance} км, \n"
-                f"потраченные калории: {self.spent_calories}, \n")
+                f"потраченные калории: {self.spent_calories} \n")
 
 
 class Swimming(Workout):
@@ -159,10 +80,11 @@ class Swimming(Workout):
         Функция выводит информацию об истории тренировок
         :return: сообщение с данными о тренировке
         """
+        type = 'Плавание'
         return (f"Дата тренировки: {self.date}, \n"
-                f"Тип тренировки: {self.type}, \n"
+                f"Тип тренировки: {type}, \n"
                 f"дистанция: {self.distance} км, \n"
-                f"потраченные калории: {self.spent_calories}, \n")
+                f"потраченные калории: {self.spent_calories} \n")
 
 class Walking(Workout):
     __tablename__ = 'walking'
@@ -185,10 +107,11 @@ class Walking(Workout):
         Функция выводит информацию об истории тренировок
         :return: сообщение с данными о тренировке
         """
+        type = 'Ходьба'
         return (f"Дата тренировки: {self.date}, \n"
-                f"Тип тренировки: {self.type}, \n"
+                f"Тип тренировки: {type}, \n"
                 f"дистанция: {self.distance} км, \n"
-                f"потраченные калории: {self.spent_calories}, \n")
+                f"потраченные калории: {self.spent_calories} \n")
 class User(Base):
     __tablename__ = 'users'
 
@@ -207,7 +130,6 @@ Workout.running = relationship('Running', back_populates='workout', uselist=Fals
 Workout.swimming = relationship('Swimming', back_populates='workout', uselist=False)
 Workout.walking = relationship('Walking', back_populates='workout', uselist=False)
 
-#дополнить таблицы Юзер (рост), дополнить все остальные таблицы(workout - вносим скорость, потраченные калории),
-# добавить таблицу ходьбы,
+
 
 

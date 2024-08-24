@@ -52,7 +52,7 @@ class Running(Training, Walking):
         super().__init__(action=action, duration=duration, weight=weight)
 
     def get_spent_calories(self) -> float:
-        """расчёт количества калорий за тренировку"""
+        """рассчёт количества калорий за тренировку"""
         CALORIES_MEAN_SPEED_MULTIPLIER = 18
         CALORIES_MEAN_SPEED_SHIFT = 1.79
         mean_speed = self.get_mean_speed()
@@ -93,7 +93,7 @@ class Swimming(Training):
         return speed
 
     def get_spent_calories(self) -> float:
-        """расчёт количества калорий за тренировку"""
+        """рассчёт количества калорий за тренировку"""
         CALORIES_MEAN_SPEED_MULTIPLIER = 18
         CALORIES_MEAN_SPEED_SHIFT = 1.79
         mean_speed = self.get_mean_speed()
@@ -116,7 +116,14 @@ class InfoMessage:
         на экран(печатает данные из экземпляра класса info)
         :return: сообщение с данными о тренировке
         """
-        return (f"Тип тренировки: {self.training_type}, \n"
+        if self.training_type == "Running":
+            training_type = 'Бег'
+        elif self.training_type == 'Swimming':
+            training_type = 'Плавание'
+        elif self.training_type == 'SportsWalking':
+            training_type = 'Ходьба'
+
+        return (f"Тип тренировки: {training_type}, \n"
                 f"длительность: {self.duration} ч., \n"
                 f"дистанция: {self.distance} км, \n"
                 f"потраченные калории: {self.calories}, \n"

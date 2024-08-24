@@ -30,10 +30,3 @@ def choice_sport():
     menu = InlineKeyboardMarkup(inline_keyboard=menu)
     return menu
 
-# def insert_training_data():
-#     menu = [
-#         [InlineKeyboardButton(text="Вввести данные о тренировке", callback_data="sport_walking")
-#     ]
-#
-#     menu = InlineKeyboardMarkup(inline_keyboard=menu)
-#     return menu

@@ -10,12 +10,8 @@ from aiogram.enums.parse_mode import ParseMode
 from bot.settings import text as txt  #menu_text, choice_text
 from bot.kb import get_menu, choice_sport, register_user
 from bot.states import RunState, DataState, WalkingState, SwimmingState
-# from bot.models import User, Base, Running, Walking, Swimming, association_table_running, association_table_walking, association_table_swimming
 from bot.models import User, Base, Running, Swimming, Walking, Workout
 from bot import calculations as calc
-
-
-from datetime import datetime
 
 
 router = Router()
@@ -30,9 +26,13 @@ Session = sessionmaker(bind=engine)
 
 @router.message(Command("start"))
 async def start_handler(message: Message):
-    # Проверка на регистрацию пользователя в бд
+    """
+    Проверяет регистрацию пользователя, если пользователь зарегистрирован, направляет меню(клавиатуру).
+    Если нет, то направляет меню для регистрации
+    :param message:
+    :return:
+    """
     user_id = message.from_user.id
-    # проверить есть ли пользователь уже в базе и изменить логику, чтобы проверять айди а не имя
     session = Session()
     user_1 = session.query(User).filter_by(tg_id=user_id).first()
     if user_1:
@@ -45,14 +45,25 @@ async def start_handler(message: Message):
 
 @router.callback_query(F.data == "data")
 async def data_handler(call: types.CallbackQuery, state: FSMContext):
+    """
+    В ответ на нажатие кнопки о регистрации устанавливает DataStat.age
+    :param call:
+    :param state:
+    :return: DataState.age
+    """
     await state.set_state(DataState.age)
     await call.message.answer(text=txt.age)
 
 
 @router.message(DataState.age)
 async def age_handler(message: Message, state: FSMContext):
+    """
+    Проверяет корректность ввода возраста и устанавливает DataState.hieght
+    :param message:
+    :param state:
+    :return: DataState.hieght
+    """
     age = message.text
-    # print(type(age))
     r = range(0, 120)
     if age.isdigit() and float(age) in r:
         await state.update_data(age=age)
@@ -64,9 +75,14 @@ async def age_handler(message: Message, state: FSMContext):
 
 
 @router.message(DataState.height)
-async def age_handler(message: Message, state: FSMContext):
+async def height_handler(message: Message, state: FSMContext):
+    """
+    Проверяет корректность ввода роста и устанавливает DataState.weight
+    :param message:
+    :param state:
+    :return: DataState.weight
+    """
     height = message.text
-    # print(type(age))
     r = range(50, 230)
     if height.isdigit() and float(height) in r:
         await state.update_data(height=height)
@@ -78,7 +94,13 @@ async def age_handler(message: Message, state: FSMContext):
 
 
 @router.message(DataState.weight)
-async def age_handler(message: Message, state: FSMContext):
+async def weight_handler(message: Message, state: FSMContext):
+    """
+    Сохраняет данные пользователя в базу данных
+    :param message:
+    :param state:
+    :return: клавиатуру с выбором спорта
+    """
     weight = message.text  # check if weight is written correctly
     r = range(15, 200)
     if weight.isdigit() and float(weight) in r:
@@ -96,60 +118,46 @@ async def age_handler(message: Message, state: FSMContext):
         await state.set_state(DataState.weight)
         await message.reply(text=txt.incorrect_weight_letters)
 
-    # all_data = await state.update_data(data={'weight': weight}) # take all data from height handler , check all data if it is correct
-    # print(all_data)
-# Handler, который сработает на выбор тренировки
-# handler, который сработает на определенную тренировку
 
-# дописать роутер для сохранения роста
 @router.callback_query(F.data == "info")
-async def sport_handler(call: types.CallbackQuery):
+async def choice_sport_handler(call: types.CallbackQuery):
+    """
+    В ответ на нажатие кнопки добавить тренировку направляет меню с выбором спорта
+    :param call:
+    :return: reply_markup=choice_sport()
+    """
     await call.message.edit_text(text=txt.choice_text, reply_markup=choice_sport())
 
 
 @router.callback_query(F.data == "history")
-async def sport_handler(call: types.CallbackQuery):
+async def history_handler(call: types.CallbackQuery):
+    """
+    Функция для вывода истории тренировок
+    :param call:
+    :return: история и reply_markup=get_menu()
+    """
     user_id = call.from_user.id
-    print(user_id)
+    # print(user_id)
     with Session() as session:
         user_1 = session.query(User).filter_by(tg_id=user_id).first()
         id_1 = user_1.id
-        print(id_1)
-        history_1 = session.query(Workout).filter_by(user_id=id_1).all()
+        # print(id_1)
+        history_1 = session.query(Workout).filter_by(user_id=id_1).limit(3).all()
         print(history_1)
         for training in history_1:
             info_about_training = training.history_message()
             await call.message.answer(text=info_about_training)
         await call.message.answer(text=txt.menu_text, reply_markup=get_menu())
-        # trainings_runnig = session.query(association_table_running).filter_by(user_id=id_1).all() # получаем котеж , который включает id тренировок
-        # trainings_walking = session.query(association_table_walking).filter_by(user_id=id_1).all()
-        # trainings_swimming = session.query(association_table_swimming).filter_by(user_id=id_1).all()
-        # print(trainings_runnig, trainings_walking, trainings_swimming)
-        # for info_run in trainings_runnig: # получаем id тренировки из кортежа
-        #     print(info_run)
-        #     run_id = info_run[2]
-        #     print(run_id)
-        #     training_run = session.query(Running).filter_by(id=run_id).first() # получаем экземпляр класса Running
-        #     print(training_run)
-        #     # await call.message.answer(text=training_run)
-        # for info_walk in trainings_walking: # получаем id тренировки из кортежа
-        #     print(info_walk)
-        #     walk_id = info_walk[2]
-        #     print(walk_id)
-        #     training_walk = session.query(Walking).filter_by(id=run_id).first() # получаем экземпляр класса Walking
-        #     print(training_walk)
-        # for info_swim in trainings_swimming: # получаем id тренировки из кортежа
-        #     print(info_swim)
-        #     swim_id = info_swim[2]
-        #     print(swim_id)
-        #     training_swim = session.query(Swimming).filter_by(id=run_id).first() # получаем экземпляр класса Swimming
-        #     print(training_swim)
-
-    # await call.message.edit_text(text=txt.choice_text, reply_markup=choice_sport())
 
 
 @router.callback_query(F.data.startswith("sport"))
 async def sport_handler(call: types.CallbackQuery, state: FSMContext):
+    """
+    Функция предлагает выбрать вид спорта
+    :param call:
+    :param state:
+    :return: RunState.actions или WalkingState.actions или SwimmingState.actions
+    """
     sport_type = call.data.split('_')[1] # второе слово из call тип тренировки
     await call.message.answer(text=txt.action_quantity)
     if sport_type == "running":
@@ -162,6 +170,12 @@ async def sport_handler(call: types.CallbackQuery, state: FSMContext):
 
 @router.message(RunState.actions)
 async def actions_handler_running(message: Message, state: FSMContext):
+    """
+    Функция сохраняет количество шагов пробежки
+    :param message:
+    :param state:
+    :return: RunState.duration
+    """
     steps_running = message.text
     if steps_running.isdigit():
         await state.update_data(action=steps_running)
@@ -174,6 +188,12 @@ async def actions_handler_running(message: Message, state: FSMContext):
 
 @router.message(RunState.duration)
 async def running_handler_duration(message: Message, state: FSMContext):
+    """
+    Рассчитывает и показывает данные о тренировке по бегу (дистанция, расход калорий и т.д.)
+    :param message:
+    :param state:
+    :return: Данные о тренировке по бегу и reply_markup=get_menu()
+    """
     running_duration = message.text
     user_id = message.from_user.id
     if running_duration.isdigit():
@@ -204,7 +224,13 @@ async def running_handler_duration(message: Message, state: FSMContext):
 
 
 @router.message(WalkingState.actions)
-async def actions_handler_wlaking(message: Message, state: FSMContext):
+async def actions_handler_walking(message: Message, state: FSMContext):
+    """
+    Сохраняет количество шагов во время прогулки
+    :param message:
+    :param state:
+    :return: WalkingState.duration
+    """
     steps_walking = message.text
     if steps_walking.isdigit():
         await state.update_data(action=steps_walking)
@@ -217,6 +243,12 @@ async def actions_handler_wlaking(message: Message, state: FSMContext):
 
 @router.message(WalkingState.duration)
 async def walking_handler_duration(message: Message, state: FSMContext):
+    """
+    Рассчитывает и показывает данные о тренировке/прогулке (дистанция, расход калорий и т.д.)
+    :param message:
+    :param state:
+    :return: данные о тренировке и reply_markup=get_menu()
+    """
     walking_duration = message.text
     user_id = message.from_user.id
     if walking_duration.isdigit():
@@ -247,42 +279,14 @@ async def walking_handler_duration(message: Message, state: FSMContext):
         await state.set_state(WalkingState.duration)
 
 
-# @router.message(WalkingState.height)
-# async def insert_height(message: Message, state: FSMContext):
-#     height = message.text
-#     user_id = message.from_user.id
-#     if height.isdigit():
-#         user_data = await state.get_data()
-#         user_action = user_data['action']
-#         user_duration = user_data['duration']
-#         training_date = datetime.now()
-#         with Session() as session:
-#             user_1 = session.query(User).filter_by(tg_id=user_id).first()
-#             user_weight = user_1.weight
-#         list_data = [float(user_action), float(user_duration), float(user_weight), float(height)]
-#         walk_1 = calc.read_package(workout_type='WLK', data=list_data)
-#         info = walk_1.show_training_info()
-#         msg = info.get_message()
-#         walk_distance = info.distance
-#         walk_speed = info.speed
-#         spent_calories = info.calories
-#         with Session() as session:
-#             user_1 = session.query(User).filter_by(tg_id=user_id).first()
-#             new_walking = Walking(action=user_action, duration=user_duration, height=height,
-#                                   date=training_date, distance=walk_distance, speed=walk_speed,
-#                                   calories=spent_calories)
-#             new_walking.user.append(user_1)
-#             session.add(new_walking)
-#             session.commit()
-#         await message.answer(text=msg, parse_mode='HTML')
-#         await message.answer(text=txt.menu_text, reply_markup=get_menu())
-#     else:
-#         await message.answer(text=txt.incorrect_height)
-#         await state.set_state(WalkingState.height)
-
-
 @router.message(SwimmingState.actions)
 async def actions_handler_swimming(message: Message, state: FSMContext):
+    """
+    Функция сохраняет количество гребков
+    :param message:
+    :param state:
+    :return: SwimmingState.duration
+    """
     steps_swimming = message.text
     if steps_swimming.isdigit():
         await state.update_data(action=steps_swimming)
@@ -295,6 +299,12 @@ async def actions_handler_swimming(message: Message, state: FSMContext):
 
 @router.message(SwimmingState.duration)
 async def swimming_handler_duration(message: Message, state: FSMContext):
+    """
+    Функция сохраняет длительность плавания
+    :param message:
+    :param state:
+    :return: SwimmingState.length_pool
+    """
     swimming_duration = message.text
     user_id = message.from_user.id
     if swimming_duration.isdigit():
@@ -306,9 +316,14 @@ async def swimming_handler_duration(message: Message, state: FSMContext):
         await state.set_state(SwimmingState.duration)
 
 
-
 @router.message(SwimmingState.length_pool)
 async def insert_length_pool(message: Message, state: FSMContext):
+    """
+    Функция сохраняет длину бассейна
+    :param message:
+    :param state:
+    :return: SwimmingState.count_pool
+    """
     length_pool = message.text
     if length_pool.isdigit():
         await state.update_data(length_pool=length_pool)
@@ -321,6 +336,13 @@ async def insert_length_pool(message: Message, state: FSMContext):
 
 @router.message(SwimmingState.count_pool)
 async def insert_count_pool(message: Message, state: FSMContext):
+    """
+    Функция запрашивает всю необходимую информацию в БД и производит расчёт потраченных калорий
+    за тренировку по плаванию
+    :param message:
+    :param state:
+    :return: сообщение о тренировке и потраченных калориях и возвращает меню с новой тренировкой или историей тренировок
+    """
     count_pool = message.text
     user_id = message.from_user.id
     if count_pool.isdigit():
@@ -357,21 +379,3 @@ async def insert_count_pool(message: Message, state: FSMContext):
 
 
 
-
-    # установить новое состояние в этом же роутере (для веса, например) и дописать код для записи данных в базу
-    #
-    #
-    # session.close()
-    # Сохранить в бд значение action этого пользователя
-    # Через await отправить требование ввести времени тренировки (duration)
-    # Включить другое состояние await state.set_state(RunState.actions)
-    # И после написать новый хендрел для этого состояния
-
-# router = Router()
-
-# # Handler, который сработает на выбор тренировки
-# # handler, который сработает на определенную тренировку
-
-#
-#
-#     # Нужно с помощью split достать, ту тренировку которую выбрал человек
