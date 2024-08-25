@@ -142,7 +142,7 @@ async def history_handler(call: types.CallbackQuery):
         user_1 = session.query(User).filter_by(tg_id=user_id).first()
         id_1 = user_1.id
         # print(id_1)
-        history_1 = session.query(Workout).filter_by(user_id=id_1).limit(3).all()
+        history_1 = session.query(Workout).order_by(Workout.id.desc()).filter_by(user_id=id_1).limit(3).all()
         print(history_1)
         for training in history_1:
             info_about_training = training.history_message()
