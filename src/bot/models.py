@@ -1,9 +1,12 @@
 import pytz
 from datetime import datetime
 
-
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship, declarative_base
+import locale
+
+
+locale.setlocale(locale.LC_TIME, 'ru_RU')
 
 
 moscow_time = pytz.timezone('Europe/Moscow')
@@ -51,7 +54,7 @@ class Running(Workout):
         :return: сообщение с данными о тренировке
         """
         type = 'Бег'
-        return (f"Дата тренировки: {self.date}, \n"
+        return (f"Дата тренировки: {self.date.strftime('%d %B %Y %H:%M')}, \n"
                 f"Тип тренировки: {type}, \n"
                 f"дистанция: {self.distance} км, \n"
                 f"потраченные калории: {self.spent_calories} \n")

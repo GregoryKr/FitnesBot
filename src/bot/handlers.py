@@ -5,9 +5,8 @@ from aiogram import types, F, Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.enums.parse_mode import ParseMode
 
-from bot.settings import text as txt  #menu_text, choice_text
+from bot.settings import text as txt
 from bot.kb import get_menu, choice_sport, register_user
 from bot.states import RunState, DataState, WalkingState, SwimmingState
 from bot.models import User, Base, Running, Swimming, Walking, Workout
