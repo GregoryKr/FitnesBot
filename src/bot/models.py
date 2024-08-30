@@ -47,15 +47,14 @@ class Running(Workout):
         'inherit_condition': id == Workout.id
     }
 
-
     def history_message(self) -> str:
         """
         Функция выводит информацию об истории тренировок
         :return: сообщение с данными о тренировке
         """
-        type = 'Бег'
+        sport_type = 'Бег'
         return (f"Дата тренировки: {self.date.strftime('%d %B %Y %H:%M')}, \n"
-                f"Тип тренировки: {type}, \n"
+                f"Тип тренировки: {sport_type}, \n"
                 f"дистанция: {self.distance} км, \n"
                 f"потраченные калории: {self.spent_calories} \n")
 
@@ -78,16 +77,18 @@ class Swimming(Workout):
         'polymorphic_identity': 'swimming',
         'inherit_condition': id == Workout.id
     }
+
     def history_message(self) -> str:
         """
         Функция выводит информацию об истории тренировок
         :return: сообщение с данными о тренировке
         """
-        type = 'Плавание'
+        sport_type = 'Плавание'
         return (f"Дата тренировки: {self.date}, \n"
-                f"Тип тренировки: {type}, \n"
+                f"Тип тренировки: {sport_type}, \n"
                 f"дистанция: {self.distance} км, \n"
                 f"потраченные калории: {self.spent_calories} \n")
+
 
 class Walking(Workout):
     __tablename__ = 'walking'
@@ -105,16 +106,19 @@ class Walking(Workout):
         'polymorphic_identity': 'walking',
         'inherit_condition': id == Workout.id
     }
+
     def history_message(self) -> str:
         """
         Функция выводит информацию об истории тренировок
         :return: сообщение с данными о тренировке
         """
-        type = 'Ходьба'
+        sport_type = 'Ходьба'
         return (f"Дата тренировки: {self.date}, \n"
-                f"Тип тренировки: {type}, \n"
+                f"Тип тренировки: {sport_type}, \n"
                 f"дистанция: {self.distance} км, \n"
                 f"потраченные калории: {self.spent_calories} \n")
+
+
 class User(Base):
     __tablename__ = 'users'
 

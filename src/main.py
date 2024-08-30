@@ -3,7 +3,6 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from aiogram.enums.parse_mode import ParseMode
 
 from dotenv import load_dotenv
 
@@ -14,7 +13,7 @@ load_dotenv()
 
 
 async def main():
-    bot = Bot(token=os.getenv("TOKEN")) #, parse_mode=ParseMode.HTML
+    bot = Bot(token=os.getenv("TOKEN"))
     dp = Dispatcher()
     dp.include_router(router)
     await bot.delete_webhook(drop_pending_updates=True)

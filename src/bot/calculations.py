@@ -1,4 +1,3 @@
-# from bot.models import User, Running
 
 class Training:
     M_IN_KM = 1000
@@ -122,6 +121,8 @@ class InfoMessage:
             training_type = 'Плавание'
         elif self.training_type == 'SportsWalking':
             training_type = 'Ходьба'
+        else:
+            training_type = 'Тренировка не найдена'
 
         return (f"Тип тренировки: {training_type}, \n"
                 f"длительность: {self.duration} ч., \n"
@@ -168,4 +169,3 @@ if __name__ == '__main__':
     for workout_type, data in packages:
         training = read_package(workout_type, data)
         main(training)
-
