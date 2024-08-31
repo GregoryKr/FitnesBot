@@ -139,13 +139,14 @@ async def sport_handler(call: types.CallbackQuery, state: FSMContext) -> None:
     :return: None
     """
     sport_type = call.data.split('_')[1]
-    if sport_type == "running":
-        await state.set_state(RunState.actions)
-    if sport_type == "walking":
-        await state.set_state(WalkingState.actions)
-    if sport_type == "swimming":
-        await state.set_state(SwimmingState.actions)
+    sport_choice = {
+        "running": state.set_state(RunState.actions),
+        "walking": state.set_state(WalkingState.actions),
+        "swimming": state.set_state(SwimmingState.actions)
+    }
+    await sport_choice[sport_type]
     await call.message.answer(text=txt.action_quantity)
+
 
 
 @router.message(RunState.actions)
