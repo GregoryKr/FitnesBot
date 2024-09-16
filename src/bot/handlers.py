@@ -148,7 +148,6 @@ async def sport_handler(call: types.CallbackQuery, state: FSMContext) -> None:
     await call.message.answer(text=txt.action_quantity)
 
 
-
 @router.message(RunState.actions)
 async def actions_handler_running(message: Message, state: FSMContext) -> None:
     """
@@ -205,8 +204,23 @@ async def running_handler_duration(message: Message, state: FSMContext) -> None:
         await message.answer(text=txt.incorrect_duration)
         await state.set_state(RunState.duration)
 
+def validate_digit_answer(func):
+    async def wrapper(message: Message, state: FSMContext):
+        numbers = message.text
+        # print(state.__doc__)
+        handler_state = await state.get_state()
+        if numbers.isdigit():
+            result = func(message, state)
+            await result
+        else:
+            # handler_state = state.get_state()
+            # print(handler_state.__name__)
+            await message.answer(text=txt.incorrect_actions)
+            await state.set_state(handler_state)
+    return wrapper
 
 @router.message(WalkingState.actions)
+@validate_digit_answer
 async def actions_handler_walking(message: Message, state: FSMContext) -> None:
     """
     Сохраняет количество шагов во время прогулки
@@ -215,13 +229,13 @@ async def actions_handler_walking(message: Message, state: FSMContext) -> None:
     :return: None
     """
     steps_walking = message.text
-    if steps_walking.isdigit():
-        await state.update_data(action=steps_walking)
-        await message.answer(text=txt.duration_running)
-        await state.set_state(WalkingState.duration)
-    else:
-        await message.answer(text=txt.incorrect_actions)
-        await state.set_state(WalkingState.actions)
+    # if steps_walking.isdigit():
+    await state.update_data(action=steps_walking)
+    await message.answer(text=txt.duration_running)
+    await state.set_state(WalkingState.duration)
+    # else:
+    #     await message.answer(text=txt.incorrect_actions)
+    #     await state.set_state(WalkingState.actions)
 
 
 @router.message(WalkingState.duration)
