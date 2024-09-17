@@ -148,7 +148,21 @@ async def sport_handler(call: types.CallbackQuery, state: FSMContext) -> None:
     await call.message.answer(text=txt.action_quantity)
 
 
+def validate_digit_answer(func):
+    async def wrapper(message: Message, state: FSMContext):
+        numbers = message.text
+        handler_state = await state.get_state()
+        if numbers.isdigit():
+            result = func(message, state)
+            await result
+        else:
+            await message.answer(text=txt.incorrect_actions)
+            await state.set_state(handler_state)
+    return wrapper
+
+
 @router.message(RunState.actions)
+@validate_digit_answer
 async def actions_handler_running(message: Message, state: FSMContext) -> None:
     """
     Функция сохраняет количество шагов пробежки
@@ -157,13 +171,10 @@ async def actions_handler_running(message: Message, state: FSMContext) -> None:
     :return: None
     """
     steps_running = message.text
-    if steps_running.isdigit():
-        await state.update_data(action=steps_running)
-        await message.answer(text=txt.duration_running)
-        await state.set_state(RunState.duration)
-    else:
-        await message.answer(text=txt.incorrect_actions)
-        await state.set_state(RunState.actions)
+    # if steps_running.isdigit():
+    await state.update_data(action=steps_running)
+    await message.answer(text=txt.duration_running)
+    await state.set_state(RunState.duration)
 
 
 @router.message(RunState.duration)
@@ -204,20 +215,6 @@ async def running_handler_duration(message: Message, state: FSMContext) -> None:
         await message.answer(text=txt.incorrect_duration)
         await state.set_state(RunState.duration)
 
-def validate_digit_answer(func):
-    async def wrapper(message: Message, state: FSMContext):
-        numbers = message.text
-        # print(state.__doc__)
-        handler_state = await state.get_state()
-        if numbers.isdigit():
-            result = func(message, state)
-            await result
-        else:
-            # handler_state = state.get_state()
-            # print(handler_state.__name__)
-            await message.answer(text=txt.incorrect_actions)
-            await state.set_state(handler_state)
-    return wrapper
 
 @router.message(WalkingState.actions)
 @validate_digit_answer
@@ -278,6 +275,7 @@ async def walking_handler_duration(message: Message, state: FSMContext) -> None:
 
 
 @router.message(SwimmingState.actions)
+@validate_digit_answer
 async def actions_handler_swimming(message: Message, state: FSMContext) -> None:
     """
     Функция сохраняет количество гребков
@@ -286,16 +284,17 @@ async def actions_handler_swimming(message: Message, state: FSMContext) -> None:
     :return: None
     """
     steps_swimming = message.text
-    if steps_swimming.isdigit():
-        await state.update_data(action=steps_swimming)
-        await message.answer(text=txt.duration_running)
-        await state.set_state(SwimmingState.duration)
-    else:
-        await message.answer(text=txt.incorrect_actions)
-        await state.set_state(SwimmingState.actions)
+    # if steps_swimming.isdigit():
+    await state.update_data(action=steps_swimming)
+    await message.answer(text=txt.duration_running)
+    await state.set_state(SwimmingState.duration)
+    # else:
+    #     await message.answer(text=txt.incorrect_actions)
+    #     await state.set_state(SwimmingState.actions)
 
 
 @router.message(SwimmingState.duration)
+@validate_digit_answer
 async def swimming_handler_duration(message: Message, state: FSMContext) -> None:
     """
     Функция сохраняет длительность плавания
@@ -305,16 +304,17 @@ async def swimming_handler_duration(message: Message, state: FSMContext) -> None
     """
     swimming_duration = message.text
     user_id = message.from_user.id
-    if swimming_duration.isdigit():
-        await state.update_data(duration=swimming_duration)
-        await message.answer(text=txt.length_pool)
-        await state.set_state(SwimmingState.length_pool)
-    else:
-        await message.answer(text=txt.incorrect_duration)
-        await state.set_state(SwimmingState.duration)
+    # if swimming_duration.isdigit():
+    await state.update_data(duration=swimming_duration)
+    await message.answer(text=txt.length_pool)
+    await state.set_state(SwimmingState.length_pool)
+    # else:
+    #     await message.answer(text=txt.incorrect_duration)
+    #     await state.set_state(SwimmingState.duration)
 
 
 @router.message(SwimmingState.length_pool)
+@validate_digit_answer
 async def insert_length_pool(message: Message, state: FSMContext) -> None:
     """
     Функция сохраняет длину бассейна
@@ -323,13 +323,13 @@ async def insert_length_pool(message: Message, state: FSMContext) -> None:
     :return: None
     """
     length_pool = message.text
-    if length_pool.isdigit():
-        await state.update_data(length_pool=length_pool)
-        await message.answer(text=txt.count_pool)
-        await state.set_state(SwimmingState.count_pool)
-    else:
-        await message.asnwer(text=txt.incorrect_length_pool)
-        await state.set_state(SwimmingState.length_pool)
+    # if length_pool.isdigit():
+    await state.update_data(length_pool=length_pool)
+    await message.answer(text=txt.count_pool)
+    await state.set_state(SwimmingState.count_pool)
+    # else:
+    #     await message.asnwer(text=txt.incorrect_length_pool)
+    #     await state.set_state(SwimmingState.length_pool)
 
 
 @router.message(SwimmingState.count_pool)
