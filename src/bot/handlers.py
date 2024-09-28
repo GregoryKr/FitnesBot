@@ -21,6 +21,7 @@ load_dotenv()
 router = Router()
 
 engine = create_engine(os.getenv('DB_URL'))
+Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
@@ -56,7 +57,31 @@ async def registration_handler(call: types.CallbackQuery, state: FSMContext) -> 
     await call.message.answer(text=txt.age)
 
 
+def validate_age(func):
+    async def wrapper(message: Message, state: FSMContext):
+        age = message.text
+        handler_state = await state.get_state()
+        r = range(0, 120)
+        if age.isdigit() and float(age) in r:
+            result = func(message, state)
+            await result
+            # if float(numbers) in func.r:
+            #     await state.update_data(age=numbers)
+            #     await state.set_state(DataState.height)
+            #     await message.answer(text=txt.height)
+        else:
+            await state.set_state(handler_state)
+            await message.answer(text=txt.incorrect_age_letters)
+            # result = func(message, state)
+            # await result
+        # else:
+        #     await message.answer(text=txt.incorrect_age_letters)
+        #     await state.set_state(handler_state)
+    return wrapper
+
+
 @router.message(DataState.age)
+@validate_age
 async def age_handler(message: Message, state: FSMContext) -> None:
     """
     Проверяет корректность ввода возраста и устанавливает DataState.height
@@ -65,17 +90,30 @@ async def age_handler(message: Message, state: FSMContext) -> None:
     :return: None
     """
     age = message.text
-    r = range(0, 120)
-    if age.isdigit() and float(age) in r:
-        await state.update_data(age=age)
-        await state.set_state(DataState.height)
-        await message.answer(text=txt.height)
-    else:
-        await state.set_state(DataState.age)
-        await message.answer(text=txt.incorrect_age_letters)
+    # r = range(0, 120)
+    # if age.isdigit() and float(age) in r:
+    await state.update_data(age=age)
+    await state.set_state(DataState.height)
+    await message.answer(text=txt.height)
+    # else:
+    #     await state.set_state(DataState.age)
+    #     await message.answer(text=txt.incorrect_age_letters)
 
+def validate_height(func):
+    async def wrapper(message: Message, state: FSMContext):
+        height = message.text
+        handler_state = await state.get_state()
+        r = range(40, 230)
+        if height.isdigit() and float(height) in r:
+            result = func(message, state)
+            await result
+        else:
+            await state.set_state(handler_state)
+            await message.answer(text=txt.incorrect_height)
+    return wrapper
 
 @router.message(DataState.height)
+@validate_height
 async def height_handler(message: Message, state: FSMContext) -> None:
     """
     Проверяет корректность ввода роста и устанавливает DataState.weight
@@ -84,17 +122,32 @@ async def height_handler(message: Message, state: FSMContext) -> None:
     :return: None
     """
     height = message.text
-    r = range(50, 230)
-    if height.isdigit() and float(height) in r:
-        await state.update_data(height=height)
-        await state.set_state(DataState.weight)
-        await message.answer(text=txt.weight)
-    else:
-        await state.set_state(DataState.height)
-        await message.answer(text=txt.incorrect_height)
+    # r = range(50, 230)
+    # if height.isdigit() and float(height) in r:
+    await state.update_data(height=height)
+    await state.set_state(DataState.weight)
+    await message.answer(text=txt.weight)
+    # else:
+    #     await state.set_state(DataState.height)
+    #     await message.answer(text=txt.incorrect_height)
+
+
+def validate_weight(func):
+    async def wrapper(message: Message, state: FSMContext):
+        weight = message.text
+        handler_state = await state.get_state()
+        r = range(15, 230)
+        if weight.isdigit() and float(weight) in r:
+            result = func(message, state)
+            await result
+        else:
+            await state.set_state(handler_state)
+            await message.answer(text=txt.incorrect_weight_letters)
+    return wrapper
 
 
 @router.message(DataState.weight)
+@validate_weight
 async def weight_handler(message: Message, state: FSMContext):
     """
     Сохраняет данные пользователя в базу данных
@@ -103,21 +156,21 @@ async def weight_handler(message: Message, state: FSMContext):
     :return: клавиатуру с выбором спорта
     """
     weight = message.text
-    r = range(15, 200)
-    if weight.isdigit() and float(weight) in r:
-        weight = float(weight)
-        user_data = await state.get_data()
-        user_age = user_data['age']
-        user_height = user_data['height']
-        user_id = message.from_user.id
-        with Session() as session:
-            new_user = User(tg_id=user_id, age=user_age, weight=weight, height=user_height)
-            session.add(new_user)
-            session.commit()
-        await message.answer(text=txt.registration_text, reply_markup=choice_sport())
-    else:
-        await state.set_state(DataState.weight)
-        await message.reply(text=txt.incorrect_weight_letters)
+    # r = range(15, 200)
+    # if weight.isdigit() and float(weight) in r:
+    weight = float(weight)
+    user_data = await state.get_data()
+    user_age = user_data['age']
+    user_height = user_data['height']
+    user_id = message.from_user.id
+    with Session() as session:
+        new_user = User(tg_id=user_id, age=user_age, weight=weight, height=user_height)
+        session.add(new_user)
+        session.commit()
+    await message.answer(text=txt.registration_text, reply_markup=choice_sport())
+    # else:
+    #     await state.set_state(DataState.weight)
+    #     await message.reply(text=txt.incorrect_weight_letters)
 
 
 @router.callback_query(F.data == "info")
